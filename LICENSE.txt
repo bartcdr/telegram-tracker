@@ -1,0 +1,7 @@
+All rights reserved.
+
+This software is proprietary and confidential.
+You may not copy, modify, distribute, or use any part of this code
+without explicit permission from the authors.
+
+(c) 2025 Артур Бобрук
