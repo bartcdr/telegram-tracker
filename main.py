@@ -7,7 +7,7 @@ import os
 # создайте приложение и скопируйте api_id и api_hash.
 
 # Загружаем переменные из .env
-load_dotenv(dotenv_path="configuration.env")
+load_dotenv(dotenv_path="src/configuration.env")
 
 api_id = os.getenv("API_ID")  # Ваш API ID
 api_hash = os.getenv("API_HASH")  # Ваш API Hash

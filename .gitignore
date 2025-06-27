@@ -18,4 +18,4 @@ ENV/
 .DS_Store
 
 # Конфиденциальные файлы
-configuration.env
+src/configuration.env
