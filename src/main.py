@@ -1,5 +1,3 @@
-# main.py
-
 import asyncio
 from Сonfig import Config
 from TelegramClient import TelegramClientManager
@@ -15,8 +13,11 @@ async def main():
         # Инициализируем клиент
         clientManager = TelegramClientManager(apiId, apiHash, sessionName)
 
-        # Регистрируем обработчик сообщений
+        # Регистрируем обработчик новых сообщений
         clientManager.registerMessageHandler(MessageHandler.handleMessage)
+
+        # Регистрируем обработчик редактирования сообщений
+        clientManager.registerMessageEditedHandler(MessageHandler.handleMessageEdited)
 
         # Запускаем клиент
         await clientManager.start()

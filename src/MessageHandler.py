@@ -4,14 +4,12 @@ from pathlib import Path
 from ChatHTMLManager import ChatHTMLManager
 from datetime import timedelta
 
-
 def find_chats_html() -> Path:
     """Ищет файл chats.html по шаблону DataExport*/lists/chats.html."""
     matches = list(Path(".").glob("DataExport*/lists/chats.html"))
     if not matches:
         raise FileNotFoundError("Файл chats.html не найден по шаблону DataExport*/lists/chats.html")
     return matches[0]
-
 
 class MessageHandler:
     """Класс для обработки входящих сообщений."""
@@ -33,12 +31,9 @@ class MessageHandler:
 
             try:
                 initial = display_name[0].upper()
-
-                # Получаем текущее время в UTC и добавляем 3 часа для Минска
                 local_time = message.date + timedelta(hours=3)
 
                 if not MessageHandler.chat_manager.user_exists(display_name):
-                    # Новый пользователь
                     chat_folder = MessageHandler.chat_manager.get_next_chat_folder()
                     chat_name = chat_folder.name
                     href = f"../chats/{chat_name}/messages.html#allow_back"
@@ -58,7 +53,6 @@ class MessageHandler:
                     }]
                     MessageHandler.chat_manager.create_chat_messages_html(chat_folder, display_name, initial, messages)
                 else:
-                    # Существующий пользователь
                     chat_folder = MessageHandler.chat_manager.get_chat_folder_for_existing_user(display_name)
                     current_count = MessageHandler.chat_manager.get_message_count(display_name)
                     MessageHandler.chat_manager.update_message_count(display_name, current_count + 1)
@@ -80,3 +74,25 @@ class MessageHandler:
             print(f"From {sender_name}: {message.text}")
         else:
             print(f"From {sender_name}: Received a non-text message (e.g., media, sticker)")
+
+    @staticmethod
+    async def handleMessageEdited(event: Any) -> None:
+        """Обрабатывает редактирование сообщения и обновляет HTML."""
+        message: Message = event.message
+        sender = await event.get_sender()
+        if sender:
+            first_name = getattr(sender, "first_name", "")
+            last_name = getattr(sender, "last_name", "")
+            display_name = f"{first_name} {last_name}".strip() or "Unknown"
+
+            try:
+                chat_folder = MessageHandler.chat_manager.get_chat_folder_for_existing_user(display_name)
+                edit_time = message.edit_date.strftime("%d.%m.%Y %H:%M:%S UTC+3")
+                MessageHandler.chat_manager.update_message_in_chat(
+                    chat_folder,
+                    message.id,
+                    message.text or "Non-text message",
+                    edit_time
+                )
+            except Exception as e:
+                print(f"[HTML Sync Error on edit]: {e}")

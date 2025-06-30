@@ -139,6 +139,7 @@ class ChatHTMLManager:
        </div>
        <div class="from_name">{msg['sender_name']}</div>
        <div class="text">{msg['text']}</div>
+       <div class="edit_history" style="display: none;"></div>
       </div>
      </div>
             """
@@ -179,10 +180,46 @@ class ChatHTMLManager:
        </div>
        <div class="from_name">{message_data['sender_name']}</div>
        <div class="text">{message_data['text']}</div>
+       <div class="edit_history" style="display: none;"></div>
       </div>
      </div>
         """, "html.parser")
 
         history_div.append(new_message)
+        with messages_html.open("w", encoding="utf-8") as f:
+            f.write(str(soup))
+
+    def update_message_in_chat(self, chat_folder: Path, message_id: int, new_text: str, edit_time: str) -> None:
+        """Обновляет сообщение в messages.html при редактировании."""
+        messages_html = chat_folder / "messages.html"
+        if not messages_html.exists():
+            raise FileNotFoundError(f"messages.html не найден в {chat_folder}")
+
+        with messages_html.open(encoding="utf-8") as f:
+            soup = BeautifulSoup(f, "html.parser")
+
+        message_div = soup.find("div", id=f"message{message_id}")
+        if not message_div:
+            raise ValueError(f"Сообщение с id {message_id} не найдено")
+
+        text_div = message_div.find("div", class_="text")
+        if not text_div:
+            raise ValueError("div.text не найден в сообщении")
+
+        old_text = text_div.get_text(strip=True)
+        text_div.string = new_text
+
+        edit_history_div = message_div.find("div", class_="edit_history")
+        if not edit_history_div:
+            edit_history_div = BeautifulSoup('<div class="edit_history" style="display: none;"></div>', "html.parser")
+            message_div.find("div", class_="body").append(edit_history_div)
+
+        new_edit = BeautifulSoup(f'<div>Edited at {edit_time}: {old_text}</div>', "html.parser")
+        edit_history_div.append(new_edit)
+
+        if not message_div.find("div", class_="edited"):
+            edited_div = BeautifulSoup('<div class="edited">Edited</div>', "html.parser")
+            message_div.find("div", class_="body").append(edited_div)
+
         with messages_html.open("w", encoding="utf-8") as f:
             f.write(str(soup))

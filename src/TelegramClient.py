@@ -1,7 +1,6 @@
 # TelegramClient.py
 # Класс для управления Telegram-клиентом.
 from telethon import events
-
 from telethon import TelegramClient
 from typing import Callable
 
@@ -28,12 +27,20 @@ class TelegramClientManager:
             raise
 
     def registerMessageHandler(self, handler: Callable) -> None:
-        """Регистрирует обработчик сообщений.
+        """Регистрирует обработчик новых сообщений.
 
         Args:
-            handler (Callable): Функция обработки сообщений.
+            handler (Callable): Функция обработки новых сообщений.
         """
         self.client.on(events.NewMessage)(handler)
+
+    def registerMessageEditedHandler(self, handler: Callable) -> None:
+        """Регистрирует обработчик редактирования сообщений.
+
+        Args:
+            handler (Callable): Функция обработки редактирования сообщений.
+        """
+        self.client.on(events.MessageEdited)(handler)
 
     async def run(self) -> None:
         """Запускает клиент в режиме ожидания сообщений."""
