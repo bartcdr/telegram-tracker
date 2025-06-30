@@ -1,3 +1,4 @@
+# Config.py
 # Чтение конфигурации из .env
 
 from typing import Optional

@@ -1,3 +1,4 @@
+# TelegramClient.py
 # Класс для управления Telegram-клиентом.
 from telethon import events
 

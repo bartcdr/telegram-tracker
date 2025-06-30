@@ -1,3 +1,5 @@
+# main.py
+
 import asyncio
 from Сonfig import Config
 from TelegramClient import TelegramClientManager

@@ -1,3 +1,4 @@
+# MessageHandler.py
 # Класс для обработки сообщений.
 
 from telethon.tl.types import Message
