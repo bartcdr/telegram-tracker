@@ -2,6 +2,8 @@ from telethon.tl.types import Message
 from typing import Any
 from pathlib import Path
 from ChatHTMLManager import ChatHTMLManager
+from datetime import timedelta
+
 
 def find_chats_html() -> Path:
     """Ищет файл chats.html по шаблону DataExport*/lists/chats.html."""
@@ -9,6 +11,7 @@ def find_chats_html() -> Path:
     if not matches:
         raise FileNotFoundError("Файл chats.html не найден по шаблону DataExport*/lists/chats.html")
     return matches[0]
+
 
 class MessageHandler:
     """Класс для обработки входящих сообщений."""
@@ -30,6 +33,10 @@ class MessageHandler:
 
             try:
                 initial = display_name[0].upper()
+
+                # Получаем текущее время в UTC и добавляем 3 часа для Минска
+                local_time = message.date + timedelta(hours=3)
+
                 if not MessageHandler.chat_manager.user_exists(display_name):
                     # Новый пользователь
                     chat_folder = MessageHandler.chat_manager.get_next_chat_folder()
@@ -45,8 +52,8 @@ class MessageHandler:
                         "id": message.id,
                         "sender_name": sender_name,
                         "text": message.text or "Non-text message",
-                        "timestamp": message.date.strftime("%d.%m.%Y %H:%M:%S UTC"),
-                        "time": message.date.strftime("%H:%M"),
+                        "timestamp": local_time.strftime("%d.%m.%Y %H:%M:%S UTC+3"),
+                        "time": local_time.strftime("%H:%M"),
                         "initial": initial
                     }]
                     MessageHandler.chat_manager.create_chat_messages_html(chat_folder, display_name, initial, messages)
@@ -59,8 +66,8 @@ class MessageHandler:
                         "id": message.id,
                         "sender_name": sender_name,
                         "text": message.text or "Non-text message",
-                        "timestamp": message.date.strftime("%d.%m.%Y %H:%M:%S UTC"),
-                        "time": message.date.strftime("%H:%M"),
+                        "timestamp": local_time.strftime("%d.%m.%Y %H:%M:%S UTC+3"),
+                        "time": local_time.strftime("%H:%M"),
                         "initial": initial
                     }
                     MessageHandler.chat_manager.append_message_to_chat(chat_folder, message_data)
