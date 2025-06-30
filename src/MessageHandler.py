@@ -1,12 +1,22 @@
 # MessageHandler.py
-# Класс для обработки сообщений.
-
 from telethon.tl.types import Message
 from typing import Any
+from pathlib import Path
+from ChatHTMLManager import ChatHTMLManager
+
+
+def find_chats_html() -> Path:
+    """Ищет файл chats.html по шаблону DataExport*/list/chats.html."""
+    matches = list(Path(".").glob("DataExport*/lists/chats.html"))
+    if not matches:
+        raise FileNotFoundError("Файл chats.html не найден по шаблону DataExport*/lists/chats.html")
+    return matches[0]
 
 
 class MessageHandler:
     """Класс для обработки входящих сообщений."""
+
+    chat_manager = ChatHTMLManager(find_chats_html())
 
     @staticmethod
     async def handleMessage(event: Any) -> None:
@@ -17,17 +27,30 @@ class MessageHandler:
         """
         message: Message = event.message
 
-        # Получаем информацию об отправителе
         sender = await event.get_sender()
         if sender:
             first_name = getattr(sender, "first_name", "")
             last_name = getattr(sender, "last_name", "")
             username = getattr(sender, "username", "")
+            sender_id = getattr(sender, "id", None)
 
-            # Формируем строку имени
-            sender_name = f"{first_name} {last_name}".strip()
+            display_name = f"{first_name} {last_name}".strip() or "Unknown"
+            sender_name = display_name
             if username:
                 sender_name += f" (@{username})"
+
+            # Добавляем пользователя в HTML
+            try:
+                initial = display_name[0].upper()
+                href = f"../chats/chat_{sender_id}/messages.html#allow_back"
+                MessageHandler.chat_manager.add_user(
+                    name=display_name,
+                    initial=initial,
+                    href=href,
+                    messages_count=0
+                )
+            except Exception as e:
+                print(f"[HTML Sync Error]: {e}")
         else:
             sender_name = "Unknown Sender"
 
