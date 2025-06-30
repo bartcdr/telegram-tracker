@@ -4,6 +4,7 @@
 from telethon.tl.types import Message
 from typing import Any
 
+
 class MessageHandler:
     """Класс для обработки входящих сообщений."""
 
@@ -15,7 +16,23 @@ class MessageHandler:
             event (Any): Событие сообщения от Telethon.
         """
         message: Message = event.message
-        if message.text:
-            print(f"Text message: {message.text}")
+
+        # Получаем информацию об отправителе
+        sender = await event.get_sender()
+        if sender:
+            first_name = getattr(sender, "first_name", "")
+            last_name = getattr(sender, "last_name", "")
+            username = getattr(sender, "username", "")
+
+            # Формируем строку имени
+            sender_name = f"{first_name} {last_name}".strip()
+            if username:
+                sender_name += f" (@{username})"
         else:
-            print("Received a non-text message (e.g., media, sticker)")
+            sender_name = "Unknown Sender"
+
+        # Выводим сообщение в терминал
+        if message.text:
+            print(f"From {sender_name}: {message.text}")
+        else:
+            print(f"From {sender_name}: Received a non-text message (e.g., media, sticker)")
