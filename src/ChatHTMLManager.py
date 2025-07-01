@@ -139,7 +139,6 @@ class ChatHTMLManager:
        </div>
        <div class="from_name">{msg['sender_name']}</div>
        <div class="text">{msg['text']}</div>
-       <div class="edit_history" style="display: none;"></div>
       </div>
      </div>
             """
@@ -180,7 +179,6 @@ class ChatHTMLManager:
        </div>
        <div class="from_name">{message_data['sender_name']}</div>
        <div class="text">{message_data['text']}</div>
-       <div class="edit_history" style="display: none;"></div>
       </div>
      </div>
         """, "html.parser")
@@ -206,16 +204,10 @@ class ChatHTMLManager:
         if not text_div:
             raise ValueError("div.text не найден в сообщении")
 
-        old_text = text_div.get_text(strip=True)
-        text_div.string = new_text
-
-        edit_history_div = message_div.find("div", class_="edit_history")
-        if not edit_history_div:
-            edit_history_div = BeautifulSoup('<div class="edit_history" style="display: none;"></div>', "html.parser")
-            message_div.find("div", class_="body").append(edit_history_div)
-
-        new_edit = BeautifulSoup(f'<div>Edited at {edit_time}: {old_text}</div>', "html.parser")
-        edit_history_div.append(new_edit)
+        current_inner_html = text_div.decode_contents()
+        new_inner_html = current_inner_html + f"<br/>edited {new_text}"
+        text_div.clear()
+        text_div.append(BeautifulSoup(new_inner_html, "html.parser"))
 
         if not message_div.find("div", class_="edited"):
             edited_div = BeautifulSoup('<div class="edited">Edited</div>', "html.parser")
